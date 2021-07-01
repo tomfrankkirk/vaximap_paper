@@ -1,2 +1,8 @@
 .vscode
 __pycache__
+*.aux
+*.out
+*.synctex.gz
+*.log
+*.pdf 
+.DS_Store
