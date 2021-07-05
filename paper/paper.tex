@@ -10,7 +10,7 @@
             citecolor=blue, urlcolor=blue]{hyperref}
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
 
-
+\graphicspath{{figs/}}
 
 \begin{document}
 
@@ -19,7 +19,9 @@
 
 \large{Thomas Kirk\textsuperscript{1}, Adam Barker\textsuperscript{2}, Armen Bodossian\textsuperscript{3}, Robert Staruch\textsuperscript{1}}
 
-\small{1 Institute of Biomedical Engineering, Department of Engineering Science, University of Oxford}
+\small{1 Institute of Biomedical Engineering, Department of Engineering Science, University of Oxford\\
+2 Something\\
+3 Something}
 
 \end{center}
 
@@ -35,6 +37,14 @@ In response to a call for help from GPs and practice managers on Twitter, Vaxima
 
 \section{Implementation}
 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\textwidth]{clustering_demo.png}
+\caption{Example clustering of 30 patients into groups of eight. Left: initialisation of four cluster centroids (denoted with X). Centre: order of patient assignment, where larger circles indicate a greater optimisation penalty. Patients in the centre of the plot could be assigned to any cluster with low cost, so are dealt with last. Right: the optimal clustering of patients after assignment. The red cluster has six patients due to imperfect number division.}
+\label{default}
+\end{figure}
+
+
 The problem is posed as sorting $N$ patients into a number of groups, of fixed size $D$, and determining the fastest order in which to visit the patients of each group. The postcode for each patient is converted into a latitude and longitude coordinate via the use of Microsoft Bing’s geocoding services \cite{X}, such that there are $N$ coordinates on the $x,y$ plane that need to be visited. 
 
 For simplicity, it is assumed that the constraint on group size $D$ is set by the user to be the number of vaccine doses in a vial (for example, nine for Oxford-AstraZeneca), though in practice any number between 3 and 25 can be used. It follows that the $N$ patients must be sorted into $G = \mathrm{ceil}(N / D)$ groups (this quantity must be rounded up in the case that $D$ does not divide perfectly into $N$, in which case one group will have size less than $D$). 
@@ -43,7 +53,7 @@ The next step is to group the patients such that they are proximal in space, whi
 
 Under this modification, an initial grouping of the $N$ patients into $G$ groups is performed using standard $k$-means. The group centroids (centre coordinates of each group) are extracted but the groupings themselves discarded. The $N$ patients are sorted in order of descending optimisation penalty, defined by the quantity (distance to furthest group centroid – distance to nearest group centroid). Qualitatively, this sorting will place those patients that are near to only one centroid first, whereas patients that are approximately equidistant from multiple centroids will be placed last. Finally, the patients are sequentially allocated in this order: each patient will be allocated to the centroid to which it is closest, that is not already full (ie, size equal to $D$). 
 
-After these steps, the initial set of $N$ patients have been sorted into $G$ spatially proximate groups. Route directions for visiting the individual patients in the optimal within-group order are obtained via Microsoft Bing’s mapping API, making use of the optimise waypoints facility \cite{X}. This step, which is performed entirely in the cloud, makes use of existing solutions to the traveling salesman problem. Optionally, the user can specify a fixed start and end point for their routes (for example, the address of their GP surgery); each route will then be a round-trip from that location. Similarly, routes can be provided for either driving or walking (the latter useful in the urban environment). 
+After these steps, the initial set of $N$ patients have been sorted into $G$ spatially proximate groups. Route directions for visiting the individual patients in the optimal within-group order are obtained via Microsoft Bing’s mapping API, making use of the optimise waypoints facility \cite{X} (the API imposes a limit of 25 patients on group size). This step, which is performed entirely in the cloud, makes use of existing solutions to the traveling salesman problem. Optionally, the user can specify a fixed start and end point for their routes (for example, the address of their GP surgery); each route will then be a round-trip from that location. Similarly, routes can be provided for either driving or walking (the latter useful in the urban environment). 
 
 \section{Analysis}
 
