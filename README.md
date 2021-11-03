@@ -9,9 +9,16 @@ The paper will serve 3 purposes:
 
 I'll fill this in after contacting some journals. The emphasis will be on the clinical utility of the service and any insights from the dataset, we won't go into lots of detail about how the system works. 
 
+
+## Conda environment 
+
+To clone the development environment used for the main vaximap site, run the following command. This will create an environment called 'vaximap'. 
+```
+conda env create -f environment.yml
+```
 ## Dataset 
 
-The dataset contains all patients that were mapped up until June 2021 (301k). Judging from early experience, there may be duplicate entries in the dataset as users made multiple similar requests to familiarise themselves with the service (eg, with different cluster sizes). These have not been identified or removed. 
+The dataset contains all patients that were mapped up until Nov 2021 (327k). Judging from early experience, there may be duplicate entries in the dataset as users made multiple similar requests to familiarise themselves with the service (eg, with different cluster sizes). These have not been identified or removed. 
 
 The demo notebook shows how to access the dataset (the requirements file should cover the libraries required). Each row in the pandas data frame represents the response to a single user request. The responses contain the following columns:
 
