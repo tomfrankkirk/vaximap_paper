@@ -7,3 +7,5 @@ __pycache__
 *.pdf 
 .DS_Store
 .ipy*
+*.png
+.ipynb_checkpoints/*
