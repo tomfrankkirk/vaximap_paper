@@ -9,3 +9,7 @@ __pycache__
 .ipy*
 *.png
 .ipynb_checkpoints/*
+*.bbl 
+*.fls 
+*.spl 
+*.fdb_latexmk
