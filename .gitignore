@@ -13,3 +13,5 @@ __pycache__
 *.fls 
 *.spl 
 *.fdb_latexmk
+*.csv
+*.txt 
