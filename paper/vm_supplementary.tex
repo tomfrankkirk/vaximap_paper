@@ -1,5 +1,6 @@
 % !TEX TS-program = pdflatexmk
-\documentclass[review]{elsarticle}
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
 \usepackage{graphicx}
 \usepackage{epstopdf}
 \usepackage{float}
@@ -13,6 +14,7 @@
 \usepackage{siunitx}
 \usepackage{booktabs}
 \usepackage{scrextend}
+\usepackage{setspace}
 
 \modulolinenumbers[5]
 \graphicspath{{figs/}}
@@ -26,6 +28,7 @@
 \begin{document}
 
 \linenumbers
+\doublespacing
 
 \title{Vaximap: optimal delivery of vaccinations for housebound patients\\
 \textit{supplementary material}}
@@ -66,17 +69,6 @@ The \vm{} dataset contains the relative latitude and longitude coordinates for e
 In order to calculate the length of routes between patients, it is necessary to calculate the pair-wise distances between patients. To do so, the patients are first shifted onto the UK by adding (53, -1.2), the approximate mid-point of the UK, to the coordinates. The coordinates are then transformed from latitude and longitude into a Cartesian metric coordinate system (EPSG:3857). From this, all pair-wise distances can be found by calculating the distance matrix for the patients, and finally closed route lengths are found by summing individual pair-wise distances as dictated by the optimal route orders. 
 
 In the real world, the shortest possible path between two points is rarely straight. The calculation performed above will give an artificially small estimate of total route length by assuming the existence of straight line paths between all patients. In order to correct this discrepancy, a multiplication by a \textit{detour index} (ratio of real world distance to straight line distance) of 1·4 was performed \cite{Cole1968}. 
-
-\section{Repeat analysis: results}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\textwidth]{many_repeats.png}
-\caption{Selected examples of repeat requests separated by more than 21 days. Labels on the $y$ axis correspond to dataset IDs. Whilst some of these could be consistent with vaccination (ie, those with the longest interval), some repeats occur within around a month and so the explanation for these is uncertain.}
-\label{many_repeats}
-\end{figure}
-
-Figure \ref{many_repeats} shows further examples of repeat requests with an interval of at least 21 days. Some repeats are sufficiently spaced apart to be consistent with vaccination and/or booster doses, though such an explanation is insufficient for those separated by a month or so. 
 
 \bibliographystyle{unsrtnat}
 \bibliography{../../../Documents/library.bib}
