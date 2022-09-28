@@ -1,0 +1,216 @@
+% !TEX TS-program = pdflatexmk
+\documentclass{article}
+\usepackage[a4paper, margin=1in]{geometry}
+\usepackage{graphicx}
+\usepackage{epstopdf}
+\usepackage{float}
+\usepackage{lineno}
+\usepackage{numcompress}
+\usepackage{amssymb}
+\usepackage{setspace}
+\usepackage{authblk}
+\usepackage{textcomp}
+\usepackage{url}
+\usepackage{breakurl}
+
+\usepackage[english]{babel}
+\usepackage[style=ieee]{biblatex}
+\usepackage{csquotes}
+\addbibresource{library.bib} 
+
+\graphicspath{{figs/}}
+\DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
+\graphicspath{{figs/}{analysis/}{survey/}}
+
+\def\vm{Vaximap}
+\modulolinenumbers[5]
+
+\begin{document}
+
+\title{\textbf{\vm{}{}: route optimisation for housebound vaccination}}
+
+\author[1,2]{Thomas F. Kirk\thanks{corresponding author: tomfrankkirk@gmail.com}}
+\author[3]{Adam J. Barker}
+\author[4]{Armen Bodossian}
+\author[1,5]{Robert Staruch}
+
+\affil[1]{Institute of Biomedical Engineering, Department of Engineering Science, University of Oxford, Oxford}
+\affil[2]{Sir Peter Mansfield Imaging Centre, School of Medicine, University of Nottingham, Nottingham}
+\affil[3]{Squarepoint Capital LLP, London}
+\affil[4]{Visa Inc., London}
+\affil[5]{Defence Deanery, Academic Department of Military Surgery and Trauma, Birmingham}
+
+\maketitle
+\doublespacing
+\linenumbers
+
+\section{Abstract}
+
+During the United Kingdom’s Covid-19 vaccination campaign, general practitioners (GPs) have held responsibility for vaccinating housebound patients. This presented them with a large, complex and unfamiliar logistical challenge, namely determining the most time-efficient route to visit multiple patients at their home address. In response to a lack of existing solutions tailored specifically to vaccination, and in light of overwhelming demand, \vm{} (\url{www.vaximap.org}) was created in January 2021 to automate the process of route planning. It is free of charge for all users and has been used to plan vaccinations for over 400,000 patients. This article analyses usage data to estimate the time savings (2.7 work-years) and financial savings (£100,000) the service has yielded for GP surgeries, which helped to accelerate the UK’s Covid-19 vaccination campaign at 
+ critical moments.
+
+\section{Background}
+\label{sec:background}
+
+The UK’s vaccination campaign against SARS-Cov-2 was launched in early 2021. One of the first questions to be addressed was to determine how severely limited quantities of vaccine should be allocated across the population, in order to most quickly reduce the severity of disease. The Joint Committee on Vaccination and Immunisation (JCVI) identified nine priority groups of descending age and risk order \cite{JCVI2020}; the top four groups, including 3.7 million clinically extremely vulnerable individuals \cite{ONS_CEV}, were to be vaccinated by the 15th February 2021, just six weeks into the wider campaign \cite{NHSE_uplift}. Within the top four groups, it is estimated that around half a million individuals were housebound\footnote{Numerous freedom of information requests to NHS England, Public Health England and the JCVI have not yielded a precise figure. Correspondence with a member of the Health Informatics Group at the Royal College of General Practitioners suggests a figure of around 500,000 and a lower bound of 250,000.}, meaning that vaccination would need to take place at the patient’s home. Responsibility for vaccinating these patients was assigned to GPs, thus presenting primary care with a complex and unfamiliar logistical challenge of a scale wholly unprecedented in recent history. 
+
+Even before the pandemic created additional pressures, primary care in the UK was stretched and under-resourced \cite{TheKingsFund2020, BritishMedicalAssociation2022}. GP numbers have been declining since 2015 and there exists substantial regional variations in primary care accessibility: for example, there are approximately 3,000 patients per GP in Luton, compared to 1,770 per GP in the Vale of York \cite{caulfieldmariaWrittenQuestionNumber2022, Rolewicz2021}. The burden imposed upon GPs by the additional responsibility to plan and deliver vaccinations to housebound patients thus fell asymmetrically across primary care. Recognising that this task would stretch already-limited resources, NHS England allocated additional funding to GPs in February 2021 specifically to support the vaccination of housebound individuals and ensure the wider campaign could proceed on schedule \cite{NHSE_uplift}. Crucially, however, no specific technical solution was put in place to support housebound vaccination, an issue that was raised by individual GPs on social media discussions, alongside the fact that they had not been given any training for a task that was completely new to them. In short, the funds had been allocated, but not the means. In response to these concerns from clinicians, \vm{} was created to automate the process of route planning.
+
+The central problem in optimising the vaccination of housebound patients is determining the fastest order in which to visit the individuals. When the route must start and end at the same location (a GP surgery, for example), this is the travelling salesman problem (TSP), or, when the start and end points are unrestricted, this is the vehicle routing problem (VRP); both problems have been extensively studied in the domains of computer science and operational research. Notwithstanding numerous solutions to these problems \cite{Laporte1990, laporteTravelingSalesmanProblem1992, braekersVehicleRoutingProblem2016, vidalConciseGuideExisting2020}, some of which have been applied in a medical context \cite{Shao2012}, vaccination imposes an extra constraint: as there are a fixed number of doses in a vial, it is preferable to sort patients into groups of this same number. This ensures that exactly one vial (or integer multiples thereof) of vaccine will be required per group of visited patients. Separately, due to the cold-storage requirements of the vaccines themselves, visiting patients in the fastest order minimises the time that vials spend outside of the cold chain. Taken together, observing these two principles reduces vaccine wastage, especially important given the limited availability of supplies during the early stages of the campaign \cite{NHSE_AZ}. As such, \vm{} operates in a two stage manner: first clustering patients into groups of a fixed size, and then finding the optimal route within each group, which is illustrated in figure \ref{demo}. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{demo.png}
+\caption{Example output produced by \vm{}. Left: 24 patients have been sorted into three clusters of size eight, the spatial distribution of which is shown here. Right: the optimal driving route for visiting the patients in cluster no. 2 (dark blue).}
+\label{demo}
+\end{figure}
+
+The creation of \vm{} was a thoroughly grass-roots effort to tackle the challenge of housebound vaccination. The initial request for help came from a GP in Wales, who subsequently tested the first prototype. After 48 hours, the production version was deployed online and thereafter was shared entirely through word of mouth within the GP community. At no point did a central authority within the NHS support or encourage the uptake of this tool. Of vital importance was a strict data-management policy: \vm{} requires a bare minimum of non-identifying patient data (postcodes) in order to function. This was crucial to satisfy GP's justified caution in adopting a new technology. Within a month of \vm{}'s launch, 100,000 vaccine deliveries had been planned on the site and the service was adopted for use by roving military vaccination teams during operation RESCRIPT, the UK military's support to HM Government during the pandemic. As of May 2022, over 400,000 deliveries have been planned using the service.
+
+The purpose of this work is threefold. First, to highlight the rapid deployment of a free digital technology to meet time-sensitive vaccination requirements. Secondly, to explain how the service functions and, finally, to estimate the benefits arising from its use thus far. As it would be methodologically challenging to quantify the benefits in terms of health outcomes, they are instead quantified in terms of time and cost savings. This work is of interest to those involved in the development and implementation of digital technology into the health service, and the planning or delivery of services to housebound patients, be they vaccination-related or otherwise.
+
+\section{Methods \& Materials}
+\subsection{Implementation}
+
+In this work, the term \textit{housebound} is used to refer to any individual whose postcode was uploaded to the \vm{} site for the purpose of planning a vaccination. Due to the anonymous nature of the tool, it is not possible to know on what medical basis they are deemed housebound. 
+
+The problem is posed as finding the shortest routes to visit a set of $N$ patients, whilst ensuring any individual practitioner visits no more than $D$ patients on a route. It is assumed, but not required, that $D$ is set as the number of vaccine doses in a vial (for example, nine for Oxford-AstraZeneca); any number between 3 and 25 inclusive can be used. It follows that the $N$ patients must be sorted into $G = \mathrm{ceiling}(N/D)$ clusters (rounded up in the case that $D$ does not divide perfectly into $N$, in which case \textit{exactly} one cluster will have size less than $D$)\footnote{This is an important extra constraint added at the request of a GP, which ensures at most one vial of vaccine will be incompletely consumed.}. 
+
+Patient postcodes uploaded by the user are transformed into latitude and longitude coordinates via the use of Microsoft Bing's geocoding service. Patients are then clustered so that they are proximal in space according to Euclidean distance, a simple heuristic to minimise the travel time within each cluster. Iterative $k$-means clustering is used to group the patients subject to the constraint on cluster size $D$, which standard $k$-means cannot do \cite{macqueen1967some, davidson2005clustering}. Qualitatively, this approach prioritises those patients that are far away from all others to ensure they are assigned to their optimal cluster first, whereas those that are close to the centre of the distribution can be assigned last to any cluster with limited impact on the optimality of the routes. The simplifying assumption implicit to clustering is that all patients are connected via direct paths, which may not be the case in reality (although the subsequent route generation step does \textit{not} make this assumption). The clustering is however robust to patients that are co-located; ie, if two or more patients share the same address, they will be counted as distinct locations, ensuring that the constraint on cluster size is not violated. The clustering process is illustrated in figure \ref{clustering}. 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{clustering_demo.png}
+\caption{Example clustering of $N$ = 30 patients into clusters of $D$ = 8. Left: initialisation of four cluster centroids (denoted with crosses). Centre: order of patient assignment, where larger circles indicate priority assignment and will be dealt with first. Patients in the centre of the distribution could be assigned to any cluster with low cost, so are dealt with last. Right: the optimal clustering of patients after assignment. The red cluster has six patients due to imperfect number division, whereas all other clusters are fully-sized.}
+\label{clustering}
+\end{figure}
+
+After cluster assignment, the final step is to determine the optimal order in which to visit the patients of each cluster. This is achieved via Microsoft Bing’s mapping API, making use of the \textit{optimise waypoints} facility. This uses a proprietary algorithm to perform the optimisation within clusters, accounting for road speeds and traffic levels at the time of route generation (albeit not at the time when the route will be followed, which is not known ahead of time). The Bing maps API imposes a limit of 25 patients per cluster. \textit{Optimise waypoints} requires a start and end point for each cluster's route to be specified in advance, after which it will optimise the order of points in between the two. In the case where the user has specified a fixed start and end point for all routes (i.e., their GP surgery), a conventional TSP is recovered. In the case where no fixed start and end point is given, a VRP is recovered and it is necessary to algorithmically specify start and end locations for each cluster's route (the API does not select them). The heuristic used in this work is to specify the two patients furthest apart from each other on the basis that all other patients will approximately lie on the line connecting them. In either case, the Bing maps API handles the optimisation for the order of intermediate locations. After route generation, the user is returned the patient clusters, the optimal driving or walking directions within each cluster, and travel time estimates. 
+
+\subsection{Dataset}
+
+Since the launch of the \vm{} service in January 2021, a database of service usage has been accumulated (in accordance with the website's privacy policy). From each user \textit{request} (corresponding to a single upload of patient postcodes and the routes that result), the following data are retained: time and date; number of patients; requested cluster size; relative distances between patients (not absolute locations); and transport mode. For approximately half of requests, counts of patient postal districts\footnote{Typical postal districts have in excess of 10,000 patients \cite{OfficeforNationalStatistics}, so this information is geographically non-precise.} were also retained (this is the first part of a postcode, for example OX1). As of May 2022, the dataset comprises approximately 13,000 requests for 395,000 patients; postal district information is available for 6,600 of the requests.
+
+
+\subsection{Analysis methods}
+
+The objective of this analysis was to estimate the time savings yielded by \vm{} and to identify high-level trends in how the service has been used. The savings arise in two ways: firstly, when \textit{planning} a route to visit patients; and secondly when \textit{following} an optimal route instead of a sub-optimal one. The following analyses were performed. 
+
+\paragraph{Repeat detection}
+ In the course of development, it was noted that users sometimes uploaded the same set of patients multiple times in quick succession, with slightly different parameters. It is suspected that such behaviour reflects a learning process on the part of users who were familiarising themselves with the site. For some of the analyses detailed below, such repeat requests (defined by a request less than 21 days after a previous identical request) were removed. It was not desired to remove repeats separated by more than 21 days, however, as these could represent genuine healthcare use cases, though they may not correspond to repeat Covid-19 vaccinations if separated by only a few weeks.
+
+\paragraph{Summary metrics}
+Summary metrics of the dataset were explored via histograms of the number of patients uploaded per request, the number of clusters the request was split into, and the number of patients per cluster. The time-series nature of the data was explored by plotting the number of user requests per day, and the total number of patients across all requests per day. Finally, the geographic distribution of the data was exploited by plotting the cumulative number of patients across all requests in each UK postal district for the subset of data with this information. These analyses were performed on the dataset including repeats.
+
+\paragraph{Savings in route planning}
+The time taken for humans to plan solutions for the TSP is remarkably quick and scales linearly with the number of locations to be visited \cite{Macgregor1996, Dry2006, MacGregor2011}. The problem solved by \vm{} is subtly different to the conventional TSP investigated in the literature because users start with a text-based list of addresses (\textit{i.e.}, from a patient database) as opposed to a visual representation. This difference is important in light of the consensus view that ``humans require a visual representation of the problem'' in order to solve it effectively \cite{MacGregor2011}. The time taken to plan routes in the absence of \vm{} can therefore be split into two components: a \textit{lookup time} to generate a spatial representation of the problem, and a \textit{routing time} to actually plan the routes using this representation.
+
+A survey that investigated these two contributions separately was conducted across 20 volunteers. These comprised 8 females, 12 males, mean age 45 years; 2 individuals were clinicians; none worked in the field of logistics or had other route-planning experience. To estimate lookup time, respondents were asked to identify on a map the location of 5, 8 and 12 sites (identified by their postcodes). To estimate routing time, respondents were asked to propose the optimal route to visit 13, 20 and 26 pre-labelled sites in 2, 3 and 4 routes respectively, where no individual route could exceed 7 sites (which represents the constraint of a fixed cluster size). Linear regression of the completion times yielded the following estimates for the time taken to perform these tasks manually: 36.4 seconds/location for lookup time, and 4.8 seconds/location for planning time (uncertainties are quantified in the supplementary material). Thus, for a 5-site route, we would expect 182 seconds of lookup time, and 24 seconds of planning time, totalling 206 seconds. The objective of this survey was \textit{not} to investigate the optimality of human TSP solutions, for which the existing literature is comprehensive. 
+
+The determined coefficients were multiplied across the entire dataset, including repeats, to obtain estimates of the time saved in planning. Repeats were included in this analysis as it was assumed users had reasonable cause for them (for example, experimenting with different cluster sizes and observing the differing travel times that result before making a decision). Finally, a penalty of 30 seconds per user request was applied to account for the approximate time it would take for a user to upload patient postcodes, choose the appropriate parameters and generate routes. 
+
+\paragraph{Savings in route following}
+The quality of human solutions to the TSP has been investigated extensively \cite{Macgregor1996, MacGregor2011, Vickers2001, MacGregor1999a}. These are often remarkably close to optimal for small problems and scale well for larger problems ($n > $ 50 locations). The empirical model of performance given in figure 2b of Dry's review \cite{Dry2006}, reproduced below in figure \ref{dry_model}, was used in this work to approximate the extra distance penalty $p(n)$ of human solutions compared to \vm{}'s solution. The approximation is imperfect in respect of the fact that the problem solved by \vm{} is sometimes a VRP; given that the majority of \vm{} generated routes were for $n \leq$ 25 patients, for which the empirical model shows the penalty to be less than 5\%, the ultimate difference in optimality arising due to this approximation should not be substantial. For each user request in the non-repeated dataset, the total (closed) length of the \vm{} generated routes $L_{vm}$ was calculated using the method given in the supplementary material. Notably, a detour index of 1.4 was used to reflect the fact that the straight-line distances necessarily used when estimating route distance from anonymised datapoints do not reflect reality \cite{Cole1968}. The approximate length of the human solution $L_h$ to the same problem was then obtained by multiplication with a scaling factor of $(1 + p(n))$ drawn from figure \ref{dry_model}. In order to convert distance savings into time savings, a mean driving speed of 50 km/h or 30 mph was assumed \cite{Balendra2020}. Repeats were not included in this estimate: though a user may have planned the same route twice in one week, they are unlikely to have actually undertaken it twice.  
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.6\textwidth]{dry_model.png}
+\caption{An empirical model of human performance on the TSP, taken from Dry's review \cite{Dry2006}. The individual observations from that work are reproduced here; a curve fit of the form $p(n) = A(1 - e^{n/B})$ was performed to yield a smooth model for the penalty $p(n)$. The penalty is less than 10\% for problems sized up to around 60 locations.}
+\label{dry_model}
+\end{figure}
+
+\section{Results}
+
+\paragraph{Summary metrics}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{timeseries.png}
+\caption{Time series of \vm{} use. Peaks assumed to correspond to the majority of first (Jan `21) and second doses (Apr `21) can be discerned, as can booster doses (Nov  `21 and May `22). The red line is the 30-day moving average of total uploaded patients per day. A few uploads of the maximum permitted number of patients (300 patients) can be observed.}
+\label{timeseries}
+\end{figure}
+
+Figure \ref{timeseries} shows the time series of \vm{} use cases, both in terms of total number of daily patients, and patients per user request. We note four peaks: February, April and November in 2021, and May 2022, which correspond to the first, second and booster vaccination doses in the UK.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\textwidth]{postcodes.png}
+\caption{Distribution of patient postcodes submitted to the \vm{} service between January 2021 and May 2022. Grey denotes no data.}
+\label{uk_overview}
+\end{figure}
+
+Figure \ref{uk_overview} shows the geographic distribution of uploaded patient locations within the UK, for a subset of the complete dataset. Use of the service has been concentrated in England and Wales; by contrast Scotland has seen very little use.  
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\textwidth]{hists.png}
+\caption{Histograms of user request characteristics. Left: total number of patients uploaded. Centre: request cluster size. Right: number of clusters per request.}
+\label{hists}
+\end{figure}
+
+Figure \ref{hists} shows summary statistics of uploaded user requests. Users uploaded a median of 17 and mean of 30 patients per request, with a target cluster size of around 10. Though a handful of users uploaded the maximum limit of 300 patients, a substantial minority uploaded 10 or so patients, resulting in a single cluster being generated. 
+
+\paragraph{Repeat detection}
+Using a 21 day threshold, 3,666 repeat requests were detected. Excluding these repeats, the dataset is reduced from 12,938 requests covering 393,186 patients to 9,272 requests covering 256,903 patients. The latter figure represents the best estimate of the number of actualhome visits that have been performed using the service. 
+
+\paragraph{Time savings in route planning}
+Applied to the full dataset including repeats, the survey-derived lookup times and routing times of 36.4s and 4.8s per location, respectively, yielded an estimate of total time savings in planning of 4,391 hours, equivalent to 109 weeks at 40 hours/week. 
+
+\paragraph{Time savings in route following}
+Applied to the full dataset without repeats, an empirical model of human performance on the TSP yielded an estimate of the total savings in distance travelled of 40,374 km. This is equivalent to 807 hours, or 20 weeks at 40 hours/week, assuming a mean travel speed of 50 km/h or 30 mph.
+
+Combining all savings yields a total of 5,199 hours of practitioner time, equivalent to 129 work-weeks or 2.7 work-years. Using mean salary estimates of £38,000 and £32,000 for a practice manager and community nurse respectively\footnote{Taken from \url{www.glassdoor.com}}, these time savings can be converted into a cost saving of approximately £100,400. 
+
+\section{Discussion}
+
+We have presented a simple and easy-to-use solution for optimising vaccine delivery to housebound patients. It has seen widespread use during the UK's Covid-19 vaccination campaign, reaching 50\% of the target patient population\footnote{Assuming a patient population of 500,000 and using a figure of 250,000 non-repeated visits planned on the site.}, and yielded both time (2.7 years of practitioner time) and cost (approximately £100,000) savings. One user in Plymouth reported doubling their rate of delivery through using the service, demonstrating that \vm{} was able to reduce the burden on the healthcare system by simplifying the execution of a complex task and quickly removing vulnerable patients from the unvaccinated population. In turn, the time savings obtained allowed primary care staff to focus on their other care responsibilities. 
+
+Harder to quantify are the savings in cognitive load of automating the complicated process of route planning, but direct feedback from users (published on the \vm{} website) frequently touched on the ``frustration'' inherent to such a tedious and labour-intensive task. This is especially relevant given the small number of users that uploaded requests containing the maximum allowed number of 300 patients; manually planning a route of this number would be wholly unreasonable. These large requests also serve to illustrate the unequal demand for, and provision of, primary care across the country \cite{Rolewicz2021}: a GP surgery looking after hundreds of housebound patients faces very different challenges to one looking after a handful. 
+
+Given that \vm{} is simplistic compared to existing TSP or VRP solutions that are in the public domain (some of which are open source, for example the VROOM project \url{https://github.com/VROOM-Project}), it is reasonable to question why this technically inferior solution saw widespread uptake. In the opinion of the authors, three reasons can be given. Firstly, GPs were involved throughout the development of \vm{} and it was therefore tailored exactly to their requirements. For example, the addition of walking directions (alongside driving) was made in response to requests from GP surgeries in urban areas. The low level of sophistication was the minimum sufficient to meet these requirements. Conversely, the sophistication of existing solutions may have been a barrier to their uptake; the fact that GPs rapidly adopted this solution indicates that they were either unaware of existing solutions or did not know how to access and operate them. This shows the importance of interacting directly with users before and during development to ensure their requirements are met, which is pertinent in light of the expectation that digital technologies will play an ever-greater role in primary care \cite{WorldHealthOrganizationWHO2018}. Secondly, uptake was driven via word-of-mouth within informal GP networks (aided by the fact the service could be presented as ``made-to-measure'' for them). It is believed that this was particularly important to overcome the data-protection concerns that were repeatedly raised during roll-out: once some GPs were using the service, it was more acceptable for others to follow suit. Thirdly, it was made available online as a public-facing website, free of charge, with a deliberately basic user interface. By way of illustration, patient postcodes may only be uploaded via an Excel spreadsheet, as GP feedback indicated that at a minimum all users would know how to export patients from their patient management systems to Excel. It is also important to note that at no stage was user training for the service provided (nor could it be), which is in stark contrast to the vast majority of existing medical software. This necessitated the constant focus on simplicity and ease-of-use; users had to figure out the service for themselves in a very short period without outside help. 
+
+There are multiple aspects of the vaccination problem that \vm{} does not account for. The vaccines available at the time of writing have different refrigeration and preparation requirements, detailed in table \ref{table_storage}. \vm{} makes no attempt to account for these and it is left to the end-user to observe them. This is readily achieved by comparing the estimated travel time for each route with the storage requirements of their particular vaccine. Similarly, the possibility of human error or wastage (i.e., that one or more doses from a vial are not used) is left to the user to manage. This is because accounting for error or wastage would require a statistical modelling approach based on previously observed wastage rates; at the outset of the vaccination campaign such data was not available. Nevertheless, a user could easily (if crudely) account for this by setting a cluster size smaller than the number of doses in a vial. It should also be noted that numerous grass-roots efforts sprang up to minimise vaccine wastage by re-allocating spare doses to the public at the end of each day (for example, \textit{Vite Ma Dose} in France); it is reasonable to assume GPs re-allocated spare doses left over from housebound vaccinations in this manner. 
+
+\begin{table}[h]
+\centering
+\begin{tabular}{p{0.17\linewidth} p{0.27\linewidth} p{0.2\linewidth} p{0.25\linewidth} }
+                   \textit{Vaccine} & \textit{Storage within GP surgery}  & \textit{Preparation}                                       & \textit{Storage after preparation} \\ \hline
+Pfizer             & 1 month between 2 and 8 \textcelsius & Dilute 0.45ml with 1.8ml of 0.9\% sodium chloride & Up to 6 hours below 30 \textcelsius \\
+Oxford-AstraZeneca & 6 months between 2 and 8 \textcelsius & No dilution required                              & Up to 6 hours below 30 \textcelsius \\
+Moderna            & 1 month between 2 and 8 \textcelsius & No dilution required                              & Up to 6 hours below 25 \textcelsius \\
+Novavax            & 6 months between 2 and 8 \textcelsius & No dilution required                              & Up to 6 hours below 25 \textcelsius 
+\end{tabular}
+\caption{Storage and preparation requirements for the four most common Covid-19 vaccines. Data taken from \cite{careTransportingStoringHandling2022}.}
+\label{table_storage}
+\end{table}
+
+\vm{} is technically simple and could be improved by adopting the strategies used in the operations research literature. As a point of departure, it is known that iterative $k$-means clustering does not always give optimal clusters so it would be desirable to replace this with a more robust approach. Further gains could be obtained by incorporating the more subtle aspects of vaccination, such as cold chain requirements and human error or wastage, but this would require users to provide more information (besides patient postcodes) to the service, which they may not be comfortable doing. Solutions for the VRP with time windows would be particularly suitable for the cold chain requirements. It is easy to foresee a situation in which not all constraints could be respected: for example, in extremely rural areas, the travel time to visit $N$ patients in a cluster could exceed the 6 hours that the vaccines may be stored at ambient temperature. Particularly in respect of cold chain requirements, care would need to be given to ensure that a more comprehensive solution does not become ``software as a medical device'', a possibility that was repeatedly questioned by external parties during development and which would raise regulatory hurdles. 
+
+At the time of writing, the service is supporting ongoing booster campaigns, as evidenced by the successive waves shown in figure \ref{timeseries}. Considering the decay of protection afforded by vaccines as time passes, and the emergence of new variants, \vm{} is well placed to assist with future Covid vaccination efforts. More importantly, the underlying problem that the service addresses will continue to exist long after Covid-19; namely, how to efficiently visit a set of patients subject to some constraint on group size. The technology could therefore be applied in other domains. An obvious example, and one already suggested by multiple users, would be supporting annual flu vaccination campaigns; a more novel example would be supporting district nurses, community nurses and physiotherapists in their daily tasks. Given community healthcare in the UK records around 100 million patient contacts annually with a budget of around £10 billion and one-fifth of the NHS workforce \cite{Fund2019}, the cumulative impact of efficiencies obtained at the grassroots level could be substantial. 
+
+\section{Contributions}
+
+TFK developed the \vm{} software and website, and set up data collection. RS identified the core need, found a community of beta testers, and acted as clinical liaison for users throughout. AJB and AB performed survey and data analysis. All authors prepared and approved the manuscript. TFK, AJB and AB verified the data. All authors had access to the data and accompanying analysis. AJB, AB and RS were acting independently of their respective employers; this work has not been endorsed by, nor does it reflect the views of, Squarepoint Capital LLP, Visa Inc., Defence Medical Services or the Ministry of Defence. 
+
+\section{Conflicts of interest}
+
+TFK, RS and Oxford University Innovation are shareholders in Vaxine Limited, a registered company in England and Wales (number 13182914), which owns the intellectual property of \vm{}. The authors declare no other conflicts of interest. 
+
+\section{Acknowledgements}
+
+The authors acknowledge financial support provided by Magdalen College, Oxford, Oxford University Innovation, and JHubMed, part of UK Strategic Command. Support of a technical nature was provided by Microsoft Bing. The authors thank Dr David Andrews for valuable feedback during the development of the service, and Captain Amrit Sandhu for integrating support from JHubMed. 
+
+\section{Code and data availability}
+
+The dataset and analysis presented in this work may be freely accessed in the following GitHub repository \url{https://github.com/tomfrankkirk/vaximap_paper/tree/ebfe82aeb5af5eeb6f6a61888eaee75d6d413c8e}. 
+
+\section{Ethics statement}
+
+This work has been reviewed by the University of Oxford Medical Sciences Interdivisional Research Ethics Committee and classified as service development and evaluation, which means it does not require ethical review (CUREC application: R79436/RE001). 
+
+
+\begingroup
+\sloppy
+\printbibliography
+\endgroup
+
+\end{document}

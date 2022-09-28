@@ -4,43 +4,42 @@
 \usepackage{graphicx}
 \usepackage{epstopdf}
 \usepackage{float}
-\usepackage[numbers]{natbib}
 \usepackage{lineno}
 \usepackage{numcompress}
 \usepackage{amssymb}
-\usepackage{subcaption}
-\usepackage{tabularx}
-\usepackage{hyperref}
-\usepackage{siunitx}
-\usepackage{booktabs}
-\usepackage{scrextend}
 \usepackage{setspace}
+\usepackage{authblk}
+\usepackage{textcomp}
+\usepackage{url}
 
-\modulolinenumbers[5]
-\graphicspath{{figs/}}
+\usepackage[english]{babel}
+\usepackage[style=ieee]{biblatex}
+\usepackage{csquotes}
+\addbibresource{library.bib} 
 
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
-
-\def\vm{VaxiMap}
-
 \graphicspath{{figs/}{../analysis}{../survey}}
+
+\def\vm{Vaximap}
+\modulolinenumbers[5]
 
 \begin{document}
 
 \linenumbers
 \doublespacing
 
-\title{Vaximap: optimal delivery of vaccinations for housebound patients\\
+\title{Vaximap: route optimisation for housebound vaccination\\
 \textit{supplementary material}}
+\author{Thomas F. Kirk, Adam J. Barker, Armen Bodossian, Robert Staruch}
 \maketitle
 
 \section{Data collection and consent}
 
-The \vm{} dataset was collected in accordance with the service's privacy policy and terms of use (\hyperlink{https://vaximap.org/policy/}{https://vaximap.org/policy/}). All users of the site consent to data collection subject to these terms. The data collected by the site is non-identifying: patient-specific postcodes are not retained, only postal districts. To each set of patient locations, a distance-preserving and non-reversible transformation that shifts their coordinates to the origin (0,0) of the global latitude and longitude coordinate system is applied. This means it is impossible to recover their original location. 
+The \vm{} dataset was collected in accordance with the service's privacy policy and terms of use (\url{https://vaximap.org/policy/}). All users of the site consent to data collection subject to these terms. The data collected by the site is non-identifying: patient-specific postcodes are not retained, only postal districts. To each set of patient locations, a distance-preserving and non-reversible transformation that shifts the mean of their coordinates to the origin (0,0) of the global latitude and longitude coordinate system is applied. This means it is impossible to recover their original location. 
 
 \section{Survey methods}
 
-\paragraph{Cohort} There were 20 respondents, 8 female, with a mean age of 45 years ($\sigma$ = 19, minimum 26, maximum 78). Six respondents had occupations that are explicitly scientific, computational or data-focussed in nature. 
+\paragraph{Cohort} There were 20 respondents, 8 female, with a mean age of 45 years (std. dev. = 19, minimum 26, maximum 78). Six respondents had occupations that are explicitly scientific, computational or data-focussed in nature. 
 
 \paragraph{Questions} Three questions investigated lookup time: respondents were presented with a list of postcodes of lengths 5, 8 and 13, respectively, and asked to locate them on map. They were allowed to use any tool to assist them in this, digital or otherwise, and were asked to record the time taken to complete each question. Three questions investigated routing time: respondents were presented with scatter-plot distributions of points, sized 13, 20 and 26, respectively, and asked to generate routes with a target size of 7 to visit all locations in as short a distance as possible. Again they were asked to record the time taken.
 
@@ -68,9 +67,11 @@ The \vm{} dataset contains the relative latitude and longitude coordinates for e
 
 In order to calculate the length of routes between patients, it is necessary to calculate the pair-wise distances between patients. To do so, the patients are first shifted onto the UK by adding (53, -1.2), the approximate mid-point of the UK, to the coordinates. The coordinates are then transformed from latitude and longitude into a Cartesian metric coordinate system (EPSG:3857). From this, all pair-wise distances can be found by calculating the distance matrix for the patients, and finally closed route lengths are found by summing individual pair-wise distances as dictated by the optimal route orders. 
 
-In the real world, the shortest possible path between two points is rarely straight. The calculation performed above will give an artificially small estimate of total route length by assuming the existence of straight line paths between all patients. In order to correct this discrepancy, a multiplication by a \textit{detour index} (ratio of real world distance to straight line distance) of 1·4 was performed \cite{Cole1968}. 
+In the real world, the shortest possible path between two points is rarely straight. The calculation performed above will give an artificially small estimate of total route length by assuming the existence of straight line paths between all patients. In order to correct this discrepancy, a multiplication by a \textit{detour index} (ratio of real world distance to straight line distance) of 1.4 was performed \cite{Cole1968}. 
 
-\bibliographystyle{unsrtnat}
-\bibliography{../../../Documents/library.bib}
+\begingroup
+\sloppy
+\printbibliography
+\endgroup
 
 \end{document}
