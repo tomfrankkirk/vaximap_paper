@@ -1,8 +1,8 @@
 import pandas as pd 
 import os.path as op 
 
-path = op.join(op.dirname(__file__), 'may_2022.h5')
-dataset = pd.read_hdf(path, key='df')
+path = op.join(op.dirname(__file__), 'oct_2022.h5')
+dataset = pd.read_hdf(path)
 print('Loading database', path)
 
 # Both UK and GB are used, modify in-place so all are UK
